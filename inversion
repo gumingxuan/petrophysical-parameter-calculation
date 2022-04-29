@@ -1,0 +1,47 @@
+    clc
+    clear
+    close all
+
+    % data_genneral=xlsread('data all.xlsx');
+    %
+    % echo_all=xlsread('data all.xlsx','饱和 Echo');
+    % factor=xlsread('data all.xlsx','factor');
+
+    % time=echo_all(:,1)/1000;
+    % echo_all(:,1)=[];
+
+
+
+    load('data_input.mat')
+
+    echo_all=echo_all.*repmat(factor',128,1);
+
+    cor_num=size(echo_all,2);
+
+    T2min=1.0e-1;% ms
+    T2max=1.0e+4;% ms
+    nt2=128;%
+    T2=logspace(log10(T2min),log10(T2max),nt2);
+    K=exp(-time*(1./T2));
+    [m,n]=size(K); % m 总回波个数    n 总布点数
+
+
+
+    T2dist=zeros(cor_num,nt2);
+    T2lm1=zeros(cor_num,1);
+    T2lm2=zeros(cor_num,1);
+    por=zeros(cor_num,1);
+    for i=1:cor_num
+
+        alphamin=1e1;alphamax=1e4;
+        [T2dist(i,:),~,~,~]=BRD(K,echo_all(:,i),alphamin,alphamax,'B',0.5,0);
+        T2lm1(i)=sum(T2dist(i,:).*log10(T2))/sum(T2dist(i,:));
+        T2lm2(i)=sum(T2dist(i,:).*(T2))/sum(T2dist(i,:));
+        por(i)=sum(T2dist(i,:));
+        %     figure
+        %     semilogx(T2,T2dist(i,:),'r-','linewidth',3.5)
+        %     xlabel('\bf{{T}}\bf{_2 (ms)}','fontweight','bold','FontSize',25);
+        %     ylabel('AMP','fontweight','bold','FontSize',25)
+        %     set(gca,'xlim',[1e-1 1e4],'xtick',[1e-1 1e0 1e1 1e2 1e3 1e4],'FontSize',25)
+        %     ylim([0 0.3])
+    end
